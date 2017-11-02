@@ -1,0 +1,5 @@
+*.ERR
+*.log
+*.aux
+*.pdf
+*.pyc
