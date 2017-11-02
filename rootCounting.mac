@@ -107,11 +107,15 @@ sSubResPol(p,q,var) :=
     
     degA : degree(pp,var),
     degB : degree(qq,var),
+   
     if degA<=degB then
       (
       print("sSubRes) Error: inconsistent degrees"),
       return(false)
       ), /* end if */
+   
+    if degA=0 then
+      return([pp]),
     
     SR : make_array('any,degA+1),
     s : make_array('any,degA+1),

@@ -99,32 +99,38 @@ bivariateMultiplicity(sol,pol,var,x,polyInX,rootInX) :=
   
 
 
-archimedeanTopology(pol,isolAlg,x,y) :=
-  block([sRes,sSR,sSRCoeff,discr,isolDiscr,i,j,jList,epsList,flag,rootSign,degP,
+archimedeanTopology(P,isolAlg,x,y) :=
+  block([pol,sRes,sSR,sSRCoeff,discr,isolDiscr,i,j,jList,epsList,flag,rootSign,degP,
          numOfRoots,rootsAtDiscr,numAbove,rootsAtDiscrAboveCr,taQ,
          numBetween,rootsBetween,res,
          coSys,generic,critY,multi,aboveCr],
 
-  pol : expand(pol), 
+  pol : ratexpand(P), 
 
   if constantp(pol) then
-    return([]),
-  
+    return([0,[0]]),
+
+  if (degree(pol,x)=0 and discriminant(pol,y)=0) or discriminant(pol,x)=0 then
+    return(not_squarefree),
+
+  if degree(pol,x)=0 and not(discriminant(pol,y)=0) then
+    return([0,[numberOfRoots(pol,y)]]),
 
   coSys : 0,
   while(not(degree(leadCoeff(pol,y),x)=0)) do
     (
     coSys : coSys + 1, 
-    if WARNINGS then
+     /*if WARNINGS then
       (
       print("topology) WARNING: the function is not quasi-monomial in ", y),
       print("topology) WARNING: new curve is : ", expand(subst(x+y,x,pol)))
-      ), /* end if */
-    pol : expand(subst(x+y,x,pol))
+      ), end if */
+    pol :ratexpand(subst(x+y,x,pol))
     ), /* end while */
   generic : false,
 
-  
+if not(degree(pol,y)=0) and (degree(discriminant(pol,y),x)=0 or numberOfRoots(discriminant(pol,y),x)=0) then
+   return([coSys,[numberOfRoots(subst(0,x,pol),y)]]),
 
   while (not(generic)) do
     (

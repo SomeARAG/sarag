@@ -797,7 +797,7 @@ The size of the image is defined by s (usually 500).
 
 --------------------------------------*/  
 
-/*load(draw);*/
+load(draw);
 
 drawMultiCertificate(L,s):=
   block([gone,t],

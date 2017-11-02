@@ -4,14 +4,12 @@
 /*modified by Mathieu Kohli (addition of quickSignDetermination)*/
 /*merged with forked developed at the Univ. of Rennes 1 by Fabrizio Caruso */
 
-dir : "./saragcur/";
-
+dir : "./sarag/";
 
 modLoad(modName) :=
 
   load(concat(dir,modName));
 
-/*load("draw");*/
 
 modLoad("sarag_initialization.mac");
 
@@ -38,6 +36,7 @@ modLoad("quickSignDetermination.mac");
 modLoad("certificateOfPositivity.mac");
 
 modLoad("multiCertificateOfPositivity.mac");
+
 
 
 

@@ -23,7 +23,7 @@ degree(poly,indet) ::=
 /* Leading coefficient of a polynomial */
 leadCoeff(poly,indet)::=
    buildq([poly,indet],
-          ratcoeff(poly,indet,degree(poly,indet)));
+          ratcoeff(ratexpand(poly),indet,degree(ratexpand(poly),indet)));
 
 
 /* Leading term of a polynomial */

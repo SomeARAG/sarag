@@ -1,6 +1,6 @@
 
-version of 1st feb 2017
-by Fabrizio Caruso
+version of 2 nov 2017
+by Fabrizio Caruso and Marie-Francoise Roy
 modified by Alexandre Le Meur and Marie-Francoise Roy
 with a contribution from Richard Leroy
 with a contribution from Mathieu Kohli

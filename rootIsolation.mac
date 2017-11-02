@@ -199,12 +199,9 @@ bernsteinCoeffList(pol,var,c,d) :=
 /* computed by using Proposition 10.24 */
 convert2Bernstein(p,polDeg,var,c,d) :=
   block([pol,auxPol,transMinusC, conDMinusC, recP, transMinusOne,res,i],
-
 pol:p,
-
-    if polDeg<degree(pol,var) then ( print("bad degree, d must be more than degree(P)"),
-    return(false))
-
+    if polDeg<degree(pol,var) then return(conversion_impossible)
+/*(print("bad degree, d must not be smaller than degree(P)")return(false)),*/ 
     else
 
     pol : expandIf(pol),
