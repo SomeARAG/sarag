@@ -1,0 +1,1804 @@
+\documentclass{article}
+\usepackage[french]{babel}
+\usepackage{amsmath,amssymb,enumerate,xcolor}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{landscape}
+
+\definecolor{grey}{rgb}{0.3,0.3,0.3}
+
+\begin{document}
+
+\title{
+  Manual of SARAG\\
+  (Some Algorithms in\\
+  Real Algebraic Geometry)
+}
+
+\maketitle
+
+
+
+SARAG was initially developed by Fabrizio Caruso under the scientific guidance of
+Marie-Fran{\c c}oise Roy at the University of Rennes 1, France, with support
+from the RAAG network, then at the University of Pisa, Italy,
+modified by Alexandre Le Meur, Mathieu Kohli and Marie-Fran{\c c}oise Roy at
+the University of Rennes 1. This manual has been written by Alexandre Le Meur
+and later modified by Marie-Fran{\c c}oise Roy, with the  help of Dima Pasechnik
+ for the SageMath part.
+
+Please report bugs to: fabrizio\_caruso@hotmail.com or
+marie-francoise.roy@univ-rennes1.fr
+
+SARAG is closely connected to "Algorithms in Real Algebraic Geometry" by
+Saugata Basu, Richard Pollack, Marie-Fran{\c c}oise Roy Springer-Verlag,
+Berlin, 2003 (second edition 2006), which  is available for
+download at
+https://perso.univ-rennes1.fr/marie-francoise.roy/bpr-ed2-posted3.html
+(version bpr-ed2-posted3 from 27/06/2016)
+together with SARAG.
+
+\section{Introduction}
+
+\subsection{The SARAG Library}
+
+SARAG is a free open source Maxima library for some algorithms of real algebraic
+geometry.
+
+SARAG provides functions for linear algebra, theory of subresultants, Cauchy
+Index and its application to real root counting, isolation of real roots, sign
+determination, Thom encodings as well as certificates of positivity in the
+univariate and multivariate case.
+
+\subsection{Requirements}
+
+\begin{itemize}
+\item
+  MAXIMA (5.9.2 or above) The library has been initially developed and tested
+  with Maxima version 5.9.2 and 5.9.3. SARAG with the only exception of
+  plotting (e.g., "drawTopology") also works on Maxima 5.9.1. The latest
+  version of Maxima tested so far is Maxima 5.35.1. The latest version of
+  Maxima is available on line at http://maxima.sourceforge.net/.
+  \item GNUPLOT (3.7.x, 4.0.x or above) The library uses Gnuplot for plotting
+  graphs and it has been tested successfully on Gnuplot 3.7.x and 4.0.x.
+    \item SageMath is you want to use SARAG inside SageMath. SARAG
+     has been tested successfully on SageMath 7.5.1 (see details later).
+     
+\end{itemize}
+
+\subsection{Loading the files}
+
+You can work directly with SARAG in Maxima with the command load(sarag).
+
+Another option is to download the last version on line that can be found on
+
+http://perso.univ-rennes1.fr/marie-francoise.roy/bpr-ed2-posted3.html
+
+in the compressed directory sarag.
+
+Another possibility is to load it inside SageMath with the commmand
+maxima\_calculus.load('sarag').
+
+The library is contained in the following files:
+
+sarag.mac (it loads all the files, settings.mac (general settings),
+constants.mac, sarag\_initialization.mac ,aliases.mac (name conventions),
+lowLevel.mac (low level routines), sarag\_linear\_algebra.mac (linear algebra
+and matrix manipulation) ,rootCounting.mac (real root counting),
+rootIsolation.mac (root isolation by De Casteljau method),
+signDetermination.mac (sign determination), intervalArithmetic.mac (interval
+arithmetic), topology.mac (topology of curves), certificatesOfPositivity
+(certificates of positivity in the univariate case),
+multiCertificatesOfPositivity (certificates of positivity in the multivaritate
+case), arag\_test.mac (test file for the book "Algorithms in Real Algebraic
+Geometry"), hard\_test.mac (test files with mostly topology computations) and
+saragmanual.pdf (this manual).
+
+ATTENTION:The variables of the different functions are explicited in the file
+named "variables".
+
+
+
+In order to load the library either load the file "sarag.mac" that will
+load all the files if they are in the same directory indicated by {\color{red}
+path} : load("{\color{red} path}/saragcur.mac") or load each single file with
+the "load" Maxima command.
+
+Example: if the library is contained in a folder named sarag in the
+directory where you are working type
+
+load("./sarag/sarag.mac").
+
+In order to test the library you can use:
+
+batch("{\color{red} path}/arag\_test.mac",test);
+
+and
+
+batch("{\color{red} path}/hard\_test.mac",test);
+
+{\color{red} path} must be replace by the path of the folder containing the
+library :
+
+exemple :
+
+batch("./sarag/arag\_test.mac",test)
+
+batch("./sarag/hard\_test.mac",test);
+
+If there are errors they are reported in arag\_test.ERR and hard\_test.ERR.
+
+\textbf{Dont pay attention to the output you get in Maxima, just open the
+files arag\_test.ERR and hard\_test.ERR.}
+
+In SageMath, load the library by typing
+
+maxima\_caiculus.load('"./sarag/sarag.mac"').
+
+and for the batch
+
+maxima\_caiculus.batch('"./sarag/arag\_test.mac"','test')
+
+maxima\_caiculus.batch('"./sarag/hard\_test.mac"',test);
+
+\subsection{Manual (file saragmanual.pdf)}
+
+
+
+This manual describes the high level functions ("main functions") of the SARAG
+library and the most important auxiliary functions.
+For more details and for the theory behind the algorithms we refer to
+"Algorithms in Real Algebraic Geometry" by S. Basu, R. Pollack, M.-F. Roy
+which together with SARAG is available for download at
+http://name.math.univ-rennes1.fr/marie-francoise.roy/bpr-ed2-posted3.html. For
+univariate certificates of positivity, to F. Boudaoud, F. Caruso M.-F. Roy
+Certificates of positivity in the Bernstein basis, Discrete and Computational
+Geometry 39 4 639-655 (2008), for multivariate certificates of positivity to
+R. Leroy, Certificats de positivit{\'e} et minimisation polynomiale dans la
+base de Bernstein multivari{\'e}e \
+http://tel.archives-ouvertes.fr/tel-00349444/fr/. For zero-nonzero sign
+determination see D. Perrucci, M.-F. Roy. Zero-nonzero and real-nonreal sign
+determination, Linear Algebra and Its Applications 439 (2013), no. 10, pp.
+3016-3030 (preliminary version,arXiv:1305.4131).
+
+\subsection{Naming conventions (file : aliases.mac)}
+
+
+The names of main functions are formed by adding prefixes to specify the
+method/algorithm which is used and suffixes to specify an alternative version
+of the function or output.
+
+When no prefix or no suffix is used the function with the default
+method/algorithm will be called as set in the file: "aliases.mac".
+
+Auxiliary functions may not follow such conventions.
+
+\subsection{Form of the output}
+
+The output of all functions of the library is a Maxima expression. Maxima uses
+brakets "[", "]" to describe couples and lists (e.g. an open inteval (a,b) is
+described by a couple containing the ends, which in Maxima is "[a,b]" (rather
+unfortunately)).
+
+Inside Sagemath, an abbreviation can be introduced for maxima\_calculus, for example, in this Manual, we are going to use
+
+MAX=maxima\_calculus
+
+Then a typical command is
+
+MAX.[....].sage()
+
+This is because SageMath must be told to make the computation inside MAXIMA, and the output must be converted to a SageMath object.
+
+\section{Functions and syntax}
+
+In this Section, all functions are described, with  syntax and arguments. For
+each function we use an example to show how the function works and what it
+returns.
+For several functions the library provides different methods for computing
+the result. This is indicated in the syntax part of a descrition in the
+paragraph Method. The default method, sert is aliases.mac is indicated with a
+*. 
+Methods not implemented yet are indicated in {\color{grey}
+ grey}.
+
+\subsection{Linear algebra (file  sarag\_linear\_algebra.mac)}
+
+This file contains functions related to Gaussian elimination and matrix
+manipulations (products, determinant, etc.). The corresponding results are explained in "Algorithms in Real Algebraic
+Geometry" by S. Basu, R. Pollack, M.-F. Roy, mainly in Chapter 8.
+
+
+\subsubsection{Matrix product}
+
+\noindent{\bf $\circ$ Matrix Product}:
+  Computes the product of two matrices
+  
+ {\bf Name}: matrixProd(A,B)
+  
+ {\bf Input}: A and B are lists of lists representing the rows of two matrices
+  such that the snumber of columns of A is equal to the number of rows of B
+  
+ {\bf Output}: the row-column product matrix of A, B
+  
+ {\bf Example}:In MAXIMA
+
+matrixProd([[1, 0, 1], [0, 1, 0], [1, 1, 0]],[[1,0,0],[0,1,0],[0,0,1]]);
+
+[[1, 0, 1], [0, 1, 0], [1, 1, 0]]
+
+\noindent  Inside Sagemath the command is
+
+MAX.matrixProd([[1, 0, 1], [0, 1, 0], [1, 1, 0]],[[1,0,0],[0,1,0],[0,0,1]]).sage()
+
+ 
+\subsubsection{Determinant, elimination}
+
+\noindent{\bf $\circ$ Determinant}: Computes the determinant of a square matrix
+  
+   {\bf Name}:   det(M)
+  
+ {\bf Input}: 
+M is a list of lists representing the rows of a square matrix
+
+ {\bf Methods}:
+  \begin{itemize}
+    \item Gauss [Gaussian elimination with no pivot optimization]
+    \item Bareiss [Bareiss method]*
+  \end{itemize}
+
+ {\bf Output}:  the determinant of M
+  
+ {\bf Example}: In MAXIMA
+
+gaussDet([[1, 0, 1], [0, 1, 0], [1, 1, 0]]);
+
+-1
+
+bareissDet([[1, 0, 1], [0, 1, 0], [1, 1, 0]]);
+
+-1
+
+det([[1, 0, 1], [0, 1, 0], [1, 1, 0]]);
+
+-1
+
+\noindent Inside Sagemath the first command is
+
+MAX.gaussDet([[1, 0, 1], [0, 1, 0], [1, 1, 0]]).sage()
+
+\noindent and similarly for the others.
+
+
+\noindent{\bf $\circ$ Elimination}!
+  Computes the upper triangular equivalent form of a matrix
+  
+   {\bf Name}:   elim(M)
+  
+{\bf Input}: 
+M is a list of lists representing the rows of a matrix
+
+ {\bf Methods}:
+  \begin{itemize}
+    \item Gauss [Gaussian elimination with no pivot optimization]
+    \item \color{grey}{Bareiss [Bareiss method]}
+  \end{itemize}
+  
+{\bf Output}:   [t,c,z] where :
+  \begin{itemize}
+    \item t is an upper triangular equivalent form of M with possibly some
+    zero rows computed by Gaussian elimination with divisions and columns
+    exchanges
+    \item c is the list of couples describing the columns exchanges
+    \item z is the list of zero rows (numbered starting from 0)
+  \end{itemize}
+  
+{\bf Example}: In MAXIMA
+
+elim([[0,1,0],[1,0,0],[0,0,0]]);
+
+[[[1, 0, 0], [0, 1, 0], [0, 0, 0]], [[0, 1]], [2]]
+
+\noindent  Inside Sagemath the command is
+
+MAX.elim([[0,1,0],[1,0,0],[0,0,0]]).sage()
+
+
+
+\subsubsection{Characteristic polynomial}
+
+\noindent{\bf $\circ$ Polynomial From Newton}:
+  Computes the polynomial corresponding to given Newton Sums
+  
+{\bf Name}: polyFromNewton(ns,var)
+  
+{\bf Input}: ns is a list containing the Newton sums of a given polynomial in
+ the variable var
+  
+ {\bf Output}: the corresponding polynomial
+  
+{\bf Example} In MAXIMA
+
+polyFromNewton([3,0,2,0],x);
+
+x\^{}3 -x
+
+\noindent In SageMath the command is
+
+MAX.polyFromNewton([3,0,2,0],x).sage()
+
+  
+\noindent{\bf $\circ$ Newton From Polynomial}:
+  Computes the Newton Sums corresponding to a given Polynomial.
+  
+ {\bf Name}: newtonFromPoly(P,var,len)
+  
+ {\bf  Input}: P is a polynomial in variable var, len is a non negative integer
+  
+ {\bf Output}: array containing the len+1 Newton sums of P
+  
+ {\bf Example} In MAXIMA
+
+newtonFromPoly(x\^{}3-x,x,3);
+
+ [ 3,0,2,0 ]
+
+\noindent In SageMath the command is
+
+MAX.newtonFromPoly(x\^{}3-x,x,3).sage()
+
+  
+\noindent{\bf $\circ$ Characteristic Polynomial}:
+  Computes the characteristic polynomial of a square matrix
+  
+{\bf Name}: charPol(A,var)
+  
+{\bf  Input}: A is a list of lists representing the rows of a suqare matrix, var is the variable of the polynomial (for example x)
+  
+{\bf  Methods} :
+  \begin{itemize}
+    \item Gauss [Gaussian elimination with no pivot optimization]
+    \item {\color{grey} Bareiss [Bareiss method]}
+    \item Baby Giant [baby step, giant step trace-based method]*
+  \end{itemize}
+  
+{\bf Output} : the characteristic polynomial of A in the indeterminate var
+  
+{\bf Example} In MAXIMA
+  
+charPol([[1,2,3,4], [2,3,4,5],[3,4,5,6], [5,6,7,8]],x);
+
+babyGiantCharPol([[1,2,3,4], [2,3,4,5], [3,4,5,6], [5,6,7,8]],x);
+
+gaussCharPol([[1,2,3,4], [2,3,4,5], [3,4,5,6], [5,6,7,8]],x);
+
+In all cases the output is  
+ 
+    x\^{}4-17*x\^{}3 -26*x\^{}2
+
+\noindent In MathSage the second command is
+
+MAX.babyGiantCharPol([[1,2,3,4], [2,3,4,5], [3,4,5,6], [5,6,7,8]],x).sage()
+
+\noindent  and similarly for the other methods
+
+
+\noindent{\bf $\circ$ Descartes Signature}:
+  Computes the signature of a symmetric matrix by the Descartes' Rule applied to the characteristic polynomial
+  
+{\bf Name}: descartesSignature(M)
+  
+ {\bf  Input} : M is a list of lists representing a square symmetric matrix
+  
+{\bf Output} : the signature of M, computed as the sign variations in the coefficients of its characteristic polynomial
+  
+{\bf Example}: In MAXIMA
+
+  descartesSignature([[1,0,0],[0,1,0],[0,0,1]]);
+  
+  3
+  
+  \noindent In SageMath the corresponding command is
+  
+  MAX.descartesSignature([[1,0,0],[0,1,0],[0,0,1]]).sage()
+  
+
+\subsection{Root counting (file : rootCounting.mac)}
+
+The corresponding results are explained in "Algorithms in Real Algebraic
+Geometry" by S. Basu, R. Pollack, M.-F. Roy, mainly in Chapter 2, 4, 8 and 9
+as well as 10 for the technique using root isolation.
+
+\subsubsection{Sign changes}
+
+\noindent{\bf $\circ$ Sign Changes}: Counts the number of sign changes in a sequence of real numbers
+  
+{\bf Name} : signChanges(seq)
+  
+{\bf  Input} : seq is a sequence of elements in an ordered integral domain
+  
+{\bf Output} : number of sign changes in the sequence seq
+  
+{\bf Example} In MAXIMA
+
+ signChanges([1,0,0,1,2,3,-8,0,1]);
+ 2
+  
+  \noindent In SageMath the command is
+  
+  MAX.signChanges([1,0,0,1,2,3,-8,0,1]).sage()
+  
+
+  \noindent{\bf $\circ$ Modified Sign Changes}:   Slight modification of the number of sign changes in a sequence of real numbers taking into account existing zeroes in the sequence
+  
+{\bf Name} : modifiedSignChanges(seq)
+  
+{\bf  Input} : seq is a sequence of elements in an ordered integral domain
+  
+{\bf Output} : modified number of sign changes in the sequence seq
+  
+{\bf Example}: In MAXIMA
+
+ modifiedSignChanges([1,0,0,1,2,3,-8,0,1]);
+ 
+ 4
+  
+  \noindent In SageMath the command is
+  
+  MAX.modifiedSignChanges([1,0,0,1,2,3,-8,0,1]).sage()
+  
+
+\noindent{\bf $\circ$ Generalized Permancences Minus
+Variations}:
+  Computes a generalization of the difference between Permanences and
+  Variations of a sequence
+  
+{\bf Name}: genPermMVar(seq)
+  
+ {\bf Input}: seq a sequence of elements in an ordered integral domain
+  
+ {\bf  Output}: PmV(seq)
+  
+ {\bf Example}: In MAXIMA
+
+genPermMVar([1,0,0,1,2,3,-8,0,1]);
+
+0
+  
+  \noindent In SageMath the command is
+  
+  MAX.genPermMVar([1,0,0,1,2,3,-8,0,1]).sage()
+  
+
+\subsubsection{Signed remainder sequence}
+
+
+\noindent{\bf $\circ$ Signed Remainder Sequence}:
+  Computes the signed remainder sequence of two polynomials
+  
+{\bf Name} : sRem(P,Q,var)
+  
+{\bf Input}: P and Q are univariate polynomials, var is the variable of the polynomials (for example x)
+  
+  {\bf Output} : list containing the signed remainder sequence
+  
+{\bf Example}: In MAXIMA
+
+sRem(x\^{}11-x\^{}10+1,\ 11*x\^{}10-10*x\^{}9,\ x);
+
+[ x\^{}{11} -x\^{}{10} +1,\ 11*x\^{}{10} -10*x\^{}{9} ,\ (10*x\^{}{9}
+    -121)/121 ,\ - (1331*x-1210)/10 ,\ 275311670611/285311670611]
+  
+  \noindent In SageMath the command is
+  
+  MAX.sRem(x\^{}11-x\^{}10+1,\ 11*x\^{}10-10*x\^{}9,\ x);.sage()
+  
+
+\noindent{\bf $\circ$ Sturm Sequence}:
+  Computes the Sturm sequence of a polynomial
+  
+{\bf Name}: sturmSequence(P,var)
+  
+{\bf Input} : P univariate  polynomial, var is the variable of the polynomial (for example x)
+  
+{\bf Output} : the Sturm sequence of P (signed remainder sequence of P and its
+  derivative)
+  
+{\bf Example}: In MAXIMA
+
+sturmSequence(x\^{}4+x+2,x);
+
+ [ x\^{}{4} +x+2,4*x\^{}{3} +1,- (3x+8)/4 , 2021/27]
+  
+  \noindent In SageMath the command is
+  
+  MAX.sturmSequence(x\^{}4+x+2,x).sage()
+
+
+
+\noindent{\bf $\circ$ Extended Signed Remainder
+Sequence}: 
+  Same as previous function but include also the corresponding sequence of
+  cofactors
+  
+  
+{\bf Name} : sRemExt(P,Q,var)
+  
+{\bf Input}: P and Q are univariate polynomials, var is the variable of the polynomials (for example x)
+  
+  {\bf Output} : list containing the signed remainder sequence and the cofactors
+ 
+  {\bf Example}  In MAXIMA
+  
+ sRemExt(x\^{}11-x\^{}10+1,11*x\^{}10-10*x\^{}9,x);
+
+\noindent The output is long ....
+  
+   In SageMath the command is
+  
+ MAX.sRemExt(x\^{}11-x\^{}10+1,11*x\^{}10-10*x\^{}9,x).sage()
+  
+
+\subsubsection{Subresultants}
+
+\noindent{\bf $\circ$ Signed Subresultant
+Polynomials}:  Computes the list of the signed subresultant polynomials of two
+  polynomials
+  
+{\bf Name} : sSubResPol(P,Q,var)
+  
+{\bf Input} : P and Q are univariate polynomials, var is the variable of the polynomials (for example x)
+  
+ {\bf Output} : [sSubRes] where sSubRes is a list containing the signed
+  subresultant sequence
+  
+{\bf Example}: In MAXIMA
+
+sSubResPol(x\^{}4+a*x\^{}2+b*x+c, diff(x\^{}4+a*x\^{}2+b*x+c,x),x);
+
+[ x\^{}{4} +a*x\^{}{2} +b*x+c,4*x\^{}{3} +2*a*x+b,-8*a*x\^{}{2} -12*b*x-16*c,32*a*c*x-36*b\^{}{2}*x-8*a\^{}{3}*x-48*b*c-4*a\^{}{2}*b,256*c\^{}{3} -12*8a\^{}{2}* c\^{}{2} +144*a*b\^{}{2}*c+16*a\^{}{4}*c-27*b\^{}{4} -4*a\^{}{3}*b\^{}{2} ]
+  
+  \noindent In SageMath the command is
+  
+  MAX.sSubResPol(x\^{}4+a*x\^{}2+b*x+c,
+  diff(x\^{}4+a*x\^{}2+b*x+c,x),x).sage()
+  
+  
+\noindent{\bf $\circ$ Signed Subresultant
+Coefficients}:
+  Computes the signed subresultant coefficients of two polynomials
+  
+ {\bf Name}: sSubResCoeff(P,Q,var)
+  
+  {\bf Input} : P is a polynomial in variable var
+  
+ {\bf Output} : the signed subresultant coefficients of the polynomials P and Q
+  
+ 
+   {\bf Example}: In MAXIMA
+
+sSubResCoeff(x\^{}3+a*x+b,diff(x\^{}3+a*x+b,x),x);
+
+ [ 1,3,-6*a,-27*b\^{}{2} -4*a\^{}{3} ]
+  
+  \noindent In SageMath the command is
+  
+  MAX.sSubResCoeff(x\^{}3+a*x+b,diff(x\^{}3+a*x+b,x),x).sage()
+  
+
+\noindent{\bf $\circ$ Extended Signed Subresultant
+Sequence}: Same as previous but includes also the corresponding sequence of cofactors
+  
+{\bf Name} : sSubResExt(P,Q,var)
+  
+{\bf Input} : P and Q are univariate  polynomials, var is the variable of the polynomials (for example x)
+  
+  {\bf Output} : [sSubRes, s, u, v] where
+  \begin{itemize}
+  
+    \item sSubRes is a list containing the signed subresultant sequence
+    
+    \item u, v are the corresponding cofactors
+  \end{itemize}
+  
+{\bf Example} In MAXIMA
+
+sSubResExt(x\^{}4+b*x+c,4*x\^{}3+b,x);
+
+ \noindent The output is long ...
+  
+  \noindent In SageMath the command is
+  
+  MAX.sSubResExt(x\^{}4+b*x+c,4*x\^{}3+b,x).sage()
+  
+
+\noindent{\bf $\circ$ GCD free part}:
+  Computes the GCD of two polynomials P and Q as well as P divided by this GCD
+  
+{\bf Name} : gcdFreePart(P,Q,var)
+  
+  {\bf Input} : P and Q are univariate polynomials, var is the variable of the polynomials (for example x)
+  
+ {\bf  Output} : [g,f] where
+  \begin{itemize}
+    \item g is a gcd(P,Q)
+    \item f is a gcd-free part of P with respect to Q
+  \end{itemize}
+  
+  \noindent{\bf $\circ$ GCD free part with integer coefficients}:
+  Computes the GCD of two polynomials P and Q as well as P divided by this GCD in the special case of integer coefficients
+  
+  {\bf Name}: gcdFreePartWithZ(P,Q,var)
+  
+  {\bf Input} : P and Q are univariate polynomials wiht integer coefficients, var is the variable of the polynomials (for example x)
+  
+  {\bf Output} : [g,f] where
+  \begin{itemize}
+   \item g is a gcd(P,Q)
+    \item f is a gcd-free part of P with respect to Q
+  \end{itemize}
+  
+{\bf Example}: In MAXIMA
+
+gcdFreePart((x\^{}2-1)*(x+2),(x+1)*x,x);
+
+   [ 2*x+2,2*x\^{}{2} +2*x-4 ]
+   
+ gcdFreePartWithZ((x\^{}2-1)*(x+2),(x+1)*x,x);
+ 
+ [ x+1,x\^{}{2} +x-2 ]
+  
+  \noindent In SageMath the corresponding commands are 
+  
+  MAX.gcdFreePart((x\^{}2-1)*(x+2),(x+1)*x,x).sage()
+  
+    MAX.gcdFreePartWithZ((x\^{}2-1)*(x+2),(x+1)*x,x).sage()
+  
+\noindent{\bf $\circ$ Sylvester Resultant}: Computes the Sylvester Resultant of two polynomials
+  
+ {\bf Name} : sylvesterResultant(P,Q,var) or
+  resultant(P,Q,var)
+  
+ {\bf Input} : P and Q are univariate polynomials; var is the variable of the polynomials (for example x)
+  
+  {\bf Output}: the resultant of P and Q (i.e. the determinant of the Sylvester
+  Matrix of P and Q)
+  
+ {\bf Example}: In MAXIMA
+ 
+ resultant(a*x\^{}2+b*x+c,2*a*x+b,x)
+    
+    4*a\^{}*c-a*b\^{}{2}
+  
+  sylvesterResultant(a*x\^{}2+b*x+c,2*a*x+b,x)
+  
+  4*a\^{}*c-a*b\^{}{2}
+  
+   \noindent In SageMath the corresponding commands are 
+  
+  MAX.resultant(a*x\^{}2+b*x+c,2*a*x+b,x).sage()
+  
+    MAX.sylvesterResultant(a*x\^{}2+b*x+c,2*a*x+b,x).sage()
+  
+\noindent{\bf $\circ$ Discriminant}:  Computes the discriminant of a polynomial
+  
+ {\bf Name}: discriminant(P,var)
+  
+  {\bf Input} : P is a polynomial in variable var
+  
+  {\bf Output} : the discriminant of the polynomial P (product of the square of the
+  differences of the roots)
+  
+ {\bf Example}: In MAXIMA
+ 
+ discriminant(x\^{}3+p*x+q,x);
+ 
+  -27*q\^{}{2} -4*p\^{}{3}
+  
+   \noindent In SageMath the corresponding command is 
+  
+  MAX.discriminant(x\^{}3+p*x+q,x).sage()
+  
+  
+\noindent{\bf $\circ$ Subdiscriminant}: Computes the subdiscriminant coefficients of a polynomial
+  
+ {\bf Name} : subDiscrCoeff(P,var)
+  
+ {\bf Input} : P is a polynomial in variable var
+  
+  {\bf Output} : the subdiscriminants of the polynomial P
+  
+ {\bf Example}: In MAXIMA
+ 
+ subDiscrCoeff(x\^{}3+p*x+q,x);
+ 
+  [ 1,3,-6*p,-27*q\^{}{2} -4p\^{}{3}]
+  
+   \noindent In SageMath the corresponding command is 
+  
+  MAX.subDiscrCoef(x\^{}3+p*x+q,x).sage()
+  
+\subsubsection{Root counting}
+
+Mainly in the file rootCounting.mac as well as rootIsolation.macfor De Casteljau-based's root
+counting method.
+
+From now on we omit to mention what to do in SageMath, the general rule, when nothing else is mentioned, being to replace
+the command [....]; in MAXIMA by MAX.[....].sage(). 
+
+\noindent{\bf $\circ$ Cauchy Index}:
+  Computes the Cauchy Index of a rational function
+  
+ {\bf Name} : cauchyIndex(Q,P,var)
+  
+ {\bf  Input}: Q, P univariate polynomials, var is the variable of the polynomials (for example x)
+  
+ {\bf   Methods}:
+  \begin{itemize}
+    \item sRem [using signed remainder sequence]
+    \item sSubRes [using signed subresultants]*
+  \end{itemize}
+  
+ {\bf  Output} : Cauchy index of Q/P in the whole real line
+  
+ {\bf Example}:
+  cauchyIndex((x-5)*(x-4)*(x-2)*(x+1)*(x+2)*(x+4),(x-3)\^{}2*(x-1)*(x+3),x);
+  
+   0
+   
+   sRemCauchyIndex( (x-5)*(x-4)*(x-2)*(x+1)*(x+2)*(x+4), (x-3)\^{}2*(x-1)*(x+3),x);
+   
+   0
+   
+   sSubResCauchyIndex((x-5)*(x-4)*(x-2)*(x+1)*(x+2)*(x+4),(x-3)\^{}2*(x-1)*(x+3),x);
+   
+   0
+
+\noindent{\bf $\circ$ Tarski Query}:
+  Computes the Tarski Query of two polynomials which is the difference between
+  the number of (real) roots of P where Q is positive and the number of roots
+  of P where Q is negative
+
+  {\bf Input} : Q, P polynomials, var is the variable of the polynomials (for example x)
+  
+  {\bf Methods} :
+  \begin{itemize}
+    \item sRem [signed remainder sequence]
+    \item sSubRes [signed subresultants]*
+  \end{itemize}
+  
+  {\bf Output : Tarski query of Q,P}
+
+ {\bf Example}{
+ 
+ tarskiQuery(x,x\^{}11-x\^{}10+1,x);
+ 
+  -1
+  
+sSubResTarskiQueryBetween(x,x\^{}11-x\^{}10+1,x);
+
+-1
+
+sRemTarskiQueryBetween(x,x\^{}11-x\^{}10+1,x);
+
+ -1
+  
+\noindent{\bf $\circ$ Number of Roots}:
+  Computes the number of real roots of a polynomial
+  
+ {\bf Name} : numberOfRoots(P,var)
+ 
+ {\bf Input }: P univariate polynomial, var is the variable of the polynomial (for example x)
+  
+  {\bf Methods}:
+  \begin{itemize}
+    \item sRem [signed remainder sequence]
+    \item sSubRes [signed subresultants]
+    \item deCasteljau [De Casteljau method for isolation]*
+    \item {\color{grey} monomial [monomial method for isolation}
+  \end{itemize}
+  
+ {\bf Output}: number of roots of P in the whole real line
+  
+{\bf Example}:
+
+   numberOfRoots(x\^{}2-2*x+1,x);
+1
+  
+  sRemNumberOfRoots(x\^{}2-2*x+1,x);
+  
+1
+
+ 
+ sSubResNumberOfRoots(x\^{}2-2*x+1,x);
+ 
+ 1
+    
+  deCasteljauNumberOfRoots(x\^{}2-2*x+1,x);
+  
+  1
+  
+
+
+\noindent{\bf $\circ$ Cauchy Index Between}:
+  Computes the Cauchy Index of a rational function between two real numbers
+  
+ {\bf Name} : cauchyIndexBetween(Q,P,var,a,b)
+  
+  {\bf Input} : Q, P polynomials, var is the variable of the polynomials (for example x), a and b are reals (a<b) or -INFINITY or +INFINITY
+  
+  {\bf  Methods} :
+  \begin{itemize}
+    \item sRem [signed remainder sequence]
+    \item sSubRes [signed subresultants]*
+  \end{itemize}
+  
+   {\bf Output} : Cauchy index of Q/P in the open  interval (a,b) (where a can be replaced by $-\infty$ and/or $b$ can be replaced by $+\infty$)
+  
+  {\bf Example} In MAXIMA
+  
+  cauchyIndexBetween((x-5)*(x-4)*(x-2)*(x+1)*(x+2)*(x+4),
+    (x-3)\^{}2*(x-1)*(x+3),x,-INFINITY,0);
+    
+    -1
+    
+    sSubResCauchyIndexBetween(
+    (x-5 )*(x-4)*(x-2)*(x+1)*(x+2)*(x+4),
+    (x-3)\^{}2*(x-1)*(x+3),x,-INFINITY,0);
+    
+    -1
+    
+    sRemCauchyIndexBetween(
+    (x-5)*(x-4)*(x-2)*(x+1)*(x+2)*(x+4),
+    (x-3)\^{}2*(x-1)*(x+3),x,-INFINITY,0);
+    
+    -1
+    
+    \noindent In SageMath the command corresponding to the first one is
+
+  MAX.cauchyIndexBetween((x-5)*(x-4)*(x-2)*(x+1)*(x+2)*(x+4),
+    (x-3)\^{}2*(x-1)*(x+3),x,'-INFINITY',0).sage()    
+    
+    \noindent (note the '...' around INFINITY) and similarly for the others.
+
+\noindent{\bf $\circ$ Tarski Query Between}:
+  Computes the Tarski Query of two polynomials between two real numbers
+
+{\bf Name}: tarskiQueryBetween(Q,P,var,a,b)
+  
+{\bf Input} : Q, P polynomials, var is the variable of the polynomials (for example x), a and b are reals (a<b) or -INFINITY or +INFINITY
+  
+{\bf  Methods}:
+  \begin{itemize}
+    \item sRem [signed remainder sequence]
+    \item sSubRes [signed subresultants]*
+  \end{itemize}
+  
+{\bf Output} : Tarski query of Q,P in the open interval (a,b)
+  
+tarskiQueryBetween(1,x\^{}11-x\^{}10+1,x,0,1);
+
+ 0
+ 
+ sSubResTarskiQueryBetween(1,x\^{}11-x\^{}10+1,x,0,1);
+ 
+ 0
+ 
+ sRemTarskiQueryBetween(1,x\^{}11-x\^{}10+1,x,0,1);
+ 
+ 0
+  
+
+
+
+\noindent{\bf $\circ$ Number of Roots Between}:
+  Computes the number of real roots of a polynomial between two real numbers
+  
+{\bf Name}: numberOfRootsBetween(P,var,a,b)
+  
+{\bf  Input}: P polynomial, var is the variable of the polynomial (for example x), a and b are reals (a<b) or -INFINITY or +INFINITY
+  
+{\bf Methods}:
+  \begin{itemize}
+    \item sRem [signed remainder sequence]
+    \item sSubRes [signed subresultants]
+    \item deCasteljau [De Casteljau method for isolation]*
+    \item {\color{grey} monomial [monomial method for isolation]}
+  \end{itemize}
+ 
+ {\bf Output} : number of roots of P in the open interval (a,b)
+  
+{\bf Example}: 
+
+numberOfRootsBetween(x\^{}2-2,x,0,10);
+
+ 1
+ 
+
+sSubResNumberOfRootsBetween(x\^{}2-2,x,0,10);
+
+1
+
+sRemNumberOfRootsBetween(x\^{}2-2,x,0,10);
+
+1
+
+deCasteljauNumberOfRootsBetween(x\^{}2-2,x,0,10);
+
+1
+  
+  
+\noindent{\bf $\circ$ Hankel Matrix}:
+  Computes the Hankel quadratic form associated to a sequence of numbers
+  
+{\bf Name} : hankelMatrix(seq)
+  
+{\bf  Input} : sequence seq of odd length of elements of an integral domain
+  
+ {\bf Output}: Hankel quadratic form for seq (represented by a square symmetric
+  matrix)}
+  
+{\bf Example}:
+  
+  hankelMatrix([0,1,2,3,4]);
+  
+   [ [ 0,1,2 ] , [ 1,2,3 ] , [ 2,3,4 ] ]
+ 
+
+\noindent{\bf $\circ$ Hankel Signature}: 
+  Computes the signature of the Hankel quadratic form associated to a
+  sequence
+  
+{\bf Name} : hankelSignature(seq)
+  
+{\bf  Input}: sequence seq of odd length of elements of an integral domain
+  
+{\bf Output} : signature of the Hankel quadratic form associated to seq
+  
+{\bf Example}:
+
+hankelSignature([0,1,2,3,4])
+
+0
+
+hankelSignature([0,0,0,0,-1])
+
+-1
+
+
+hankelSignature([0,0,0,-1,a]);
+
+0
+  
+
+\noindent{\bf $\circ$ Difference of roots with positive and
+negative real part}:
+  Computes the difference between the number of complex roots a polynomial with
+  positive real part and those with negative real part
+  
+{\bf Name}: posNegDiff(P,var)
+  
+{\bf Input}: P is a polynomial in variable var
+  
+{\bf Output}: difference between the number of roots of P with positive real part
+  and those with negative real part
+  
+{\bf Example}: 
+
+posNegDiff((x\^{}2-1)*(x\^{}3-1),x);
+
+-1
+  
+  
+\subsubsection{Isolation of roots (file : rootIsolation.mac)}
+
+The corresponding results are explained in Chapter 10 of "Algorithms in Real
+Algebraic Geometry" by S. Basu, R. Pollack, M.-F. Roy
+
+
+The routines contained in the file rootIsolation.mac deal with the problem of isolation of
+real roots by using the conversion to the Bernstein basis and De Casteljau's
+method.
+
+
+\noindent{\bf $\circ$ Cauchy Upper Bound}:
+  Computes the difference between the number of roots a polynomail with
+  positive real part and those with negative real part
+  
+{\bf Name} : cauchyRootUpperBound(P,var)
+  
+{\bf Input} : P is a polynomial in variable var
+  
+{\bf Output}: the upper bound for the absolute values of all real roots of P
+  
+{\bf Example}
+
+cauchyRootUpperBound(x+2,x)
+
+    3
+
+  
+  
+\noindent{\bf $\circ$ Cauchy Lower Bound}:
+  Computes the lower bound for the absolute values of all real roots of a
+  polynomial
+  
+{\bf Name}: cauchyRootLowerBound(P,var)
+  
+{\bf  Input}: P is a polynomial in variable var
+  
+{\bf   Output}: the lower bound for the absolute values of all non-zero real roots
+  of P
+  
+{\bf Example}:
+
+cauchyRootLowerBound(x+2,x);
+
+2/3
+
+\noindent{\bf $\circ$ Prime Cauchy Upper Bound}:
+  Computes an (alternative) upper bound for the absolute values of all real
+  roots of a polynomial
+  
+{\bf Name}: primeCauchyRootUpperBound(P,var)
+  
+{\bf Input}: P is a polynomial in variable var
+  
+{\bf Output}: (alternative) upper bound for the absolute values of all real roots
+  of P
+  
+{\bf Example}:
+  
+  primeCauchyRootUpperBound(x+2,x)
+  10
+
+
+\noindent{\bf $\circ$ Prime Cauchy Lower Bound}:
+  Computes an (alternative) lower bound for the absolute values of all real
+  roots of a polynomial P
+  
+{\bf Name}: primeCauchyRootLowerBound(P,var)
+  
+ {\bf  Input}: P is a polynomial in variable var
+  
+ {\bf  Output}: (alternative) lower bound for the absolute values of all non-zero
+  real roots of P
+  
+{\bf Example}:
+
+primeCauchyRootLowerBound(x+2,x);
+
+2/5
+
+  
+
+\noindent{\bf $\circ$ Convert to Berstein}:
+  Computes the coefficients of a polynomial in the Berstein's Basis
+  
+{\bf Name}: convert2Bernstein(P,d,var,l,r)
+  
+{\bf Input}: P is a polynomial in variable var of degree at most d,  and r are the parameters of the Basis. (l<r)
+  
+{\bf Output}: list containing the coefficients of P in the Bernstein basis of
+  degree d for l,r
+  
+{\bf Example}
+
+convert2Bernstein(x\^{}2,2,x,0,1);
+
+[ 0,0,1 ]
+
+convert2Bernstein(x\^{}2,1,x,0,1);
+
+conversion\_impossible
+
+The conversion is impossible when d is not at least the degree of P/
+  
+\noindent{\bf $\circ$ Berntein Split}:
+  Computes the coefficients of P in the Berstein's Basis for l,m and mr,
+  knowing those for l,r
+  
+{\bf Name}: bernsteinSplit(coeffList, l,r,m)
+  
+{\bf Input}: coeffList is the list of coefficients of a polynomial in Berstein
+  basis for l,r, m is another number
+  
+ {\bf  Output}: [bern\_lm, bern\_mr] where
+  \begin{itemize}
+    \item bern\_lm is a list containing the coefficients in the Bernstein
+    basis of degree d for l,m
+    \item bern\_mr is a list containing the coefficients in the Bernstein
+    basis of degree d for m,r
+  \end{itemize}
+  
+{\bf Example}
+
+string(bernsteinSplit([4,-6,7,10],0,1,1/2))
+
+[[4,-1,-1/4,17/8],[17/8,9/2,17/2,10]]
+  
+
+
+\noindent{\bf  $\circ$ Special Berntein Split}:
+  Computes integer multiples of the coefficients of P in the Berstein's Basis
+  for l,(l+r)/2 and (l+r)/2,r knowing those for l,r
+  
+{\bf Name}: specialBernsteinSplit(coeffList, l,r)
+  
+{\bf Input}: coeffList is the list of coefficients of a polynomial in berstein
+  basis for parameters l,r
+  
+{\bf Output}: [bern\_first,bern\_second] where :
+  \begin{itemize}
+    \item bern\_first is a list containing the coefficients in the Bernstein
+    basis for l,(l+r)/2 of 2\^{}deg(P) P
+    \item bern\_second is a list containing the coefficients in the Bernstein
+    basis for (l+r)/2,r of 2\^{}deg(P) P
+  \end{itemize}
+  
+{\bf Example}:
+
+specialBernsteinSplit([4,-6,7,10],0,1);
+
+[ [ 32,-8,-2,17 ] , [ 17,36,68,80 ] ]
+  
+
+\noindent{\bf $\circ$ Isolate Roots}:
+  Computes a list containing points or open intervals which contain the roots
+  of a given polynomial
+  
+{\bf Name}: isolateRoots(P,var)
+  
+{\bf Input}: P is a polynomial in variable var
+  
+{\bf  Methods}:
+  \begin{itemize}
+    \item deCasteljau [De Casteljau method for root isolation]
+    \item {\color{grey} monomial [root isolation in the monomial basis]}
+  \end{itemize}
+  
+  {\bf Output}: characterization of the roots of P by a list of elements of the
+  form either
+  \begin{itemize}
+    \item [pt] describing a real root pt of P
+    \item [a,b] describing the open interval (a,b) containing exactly one root
+    of P
+  \end{itemize}
+  
+{\bf Example}
+
+isolateRoots(-33*x\^{}3+69*x\^{}2-30*x+4,x);
+
+[ [ 1,2 ] ]
+
+isolateRoots(x\^{}2-2*x+1,x);
+
+ [ -4,4 ] ]
+
+\noindent{\bf $\circ$ Isolate Roots Between}:
+  Computes a list containing points or open intervals which contain the roots
+  of a given polynomial between two real numbers
+  
+{\bf Name}: isolateRootsBetween(P,var,a,b)
+  
+{\bf Input}: P is a polynomial in variable var.a,b two real numbers
+  
+{\bf Methods}:
+  \begin{itemize}
+    \item deCasteljau [De Casteljau method for root isolation]
+    \item {\color{grey} monomial [root isolation in the monomial basis]}
+  \end{itemize}
+  
+ {\bf  Output}: list of elements of the form either
+  \begin{itemize}
+    \item [pt] describing the real root pt which is a root of P
+    \item [c,d] describing the open interval (c,d) containing exactly a root
+    of P
+  \end{itemize}
+  
+{\bf Example}:
+
+isolateRootsBetween((x-2)\^{}2-1,x,-4,4);
+
+[ [ 0,2 ] , [ 2,4 ] ]
+  
+  
+\noindent{\bf $\circ$ Find Roots}
+  Computes a list containing points of open intervals smaller than threshold
+  which contain exactly one root of a given polynomial.
+
+\noindent{\bf $\circ$ Find Roots Between}:
+  Computes a list containing points of open intervals smaller than threshold
+  which contain exactly one root of a given polynomial and are between two
+  real numbers
+  
+{\bf Name}: findRoots(P,var,threshold)
+  
+{\bf Input}: P is a polynomial in variable var.
+threshold is the interval in which the function search
+  the roots.
+  
+{\bf   Methods}:
+  \begin{itemize}
+    \item deCasteljau [De Casteljau method for root isolation]
+    \item {\color{grey} monomial [root isolation in the monomial basis]}
+  \end{itemize}
+  
+{\bf Output}: list of elements of the form either
+  \begin{itemize}
+    \item [pt] describing the real root pt of P
+    \item [a,b] describing the open interval "(a,b)" smaller than threshold
+    and containing exactly a root of P
+  \end{itemize}
+  
+  {\bf Example}:
+
+findRootsBetween(x\^{}3-1,x,1,-2,2);
+
+ [ [ 1 ] ]
+
+\noindent{\bf $\circ$ Refine roots}:
+
+\MF{to be done}
+
+\noindent{\bf $\circ$ Roots and Sign}:
+  Computes a list containing couples describing the real roots of P and the
+  sign of Q at these real roots
+  
+{\bf Name}: signsAtRoots(isInt,P,Q,var)
+  
+{\bf Input}: P,Q are polynomials in variable var.isolating list isInt for the real roots of P in the same
+  form as in the output of "isolateRealRoots"
+  
+  {\bf  Methods}:
+  \begin{itemize}
+    \item deCasteljau [De Casteljau method for root isolation]
+    \item {\color{grey} monomial [root isolation in the monomial basis]}
+  \end{itemize}
+  
+{\bf   Output}: lists of couples describing a real root and the sign of Q at this
+  real root
+  
+{\bf Example}:
+
+polR:(x-2)*(x\^{}2-1):isInt :
+    deCasteljauIsolateRoots(polR,x);
+    [ [ -8,0 ] , [ 0,2 ] , [ 2 ] ]
+    
+    polQ:x\^{}2-4: signsAtRoots(isInt,polR,polQ,x);
+    
+    [ [ [ -2,0 ] ,-1 ] , [ [ 0,2 ] ,-1 ] , [ [ 2 ] ,0 ] ]
+    
+    deCasteljauSignsAtRoots(isInt,polR,polQ,x);
+    [ [ [ -2,0 ] ,-1 ] , [ [ 0,2 ] ,-1 ] , [ [ 2 ] ,0 ] ]
+  
+
+\noindent{\bf $\circ$ Evaluate signs}:
+  Evaluates the signs of two polynomials at their roots
+  
+{\bf Syntax}{Name}: evaluateSignsAtRoots(P,Q,var)
+  
+{\bf Input}: P,Q are polynomials in variable var.
+  
+{\bf Methods}:
+  \begin{itemize}
+    \item deCasteljau [De Casteljau method for root isolation]
+    \item {\color{grey} monomial [root isolation in the monomial basis]}
+  \end{itemize}
+ 
+ {\bf Output}: [com,signNComP,signNComQ] where
+  \begin{itemize}
+ \item com is an isolating list for the common real roots of P and Q
+    \item signNComP is an isolating list with signs of Q for the real roots of
+    P that are not roots of Q
+    \item signNComQ is an isolating list with signs of P for the real roots of
+    Q that are not roots of P
+  \end{itemize}
+  
+{\bf  Example}:
+
+evaluateSignsAtRoots(x+1,x,x);
+
+[ [ ] , [ [ [ -2,0 ] ,-1 ] ] , [ [ [ -1,1 ] ,1 ] ] ]
+
+deCasteljauEvaluateSignsAtRoots(x+1,x,x);
+
+[ [ ] , [ [ [ -2,0 ] ,-1 ] ] , [ [ [ -1,1 ] ,1 ] ] ]
+
+
+\subsubsection{Sign Determination (signDetermination.mac and quickSignDetermination.mac)}
+
+The corresponding results are explained in Chapter 10 of "Algorithms in Real
+Algebraic Geometry" by S. Basu, R. Pollack, M.-F. Roy edition 2 and edition
+2016 on line
+http://name.math.univ-rennes1.fr/marie-francoise.roy/bpr-ed2-posted3.html.
+
+ When we refer to an algorithm that computes the Tarski query of
+polynomials we assume that it has the same input/output format as
+"tarskiQuery" (ses Section Root Counting)
+
+\noindent{\bf $\circ$ Sign Determination}:
+  Computes the signs of list of polynomials in a given finite set (typically
+  defined as the zero set of a polynomial)
+  
+{\bf Name}: signDetermination(polList,ptSet,sqAlg,var)
+  
+{\bf Input}: list polList of polynomials in var, a description of a finite set of
+  points, an algorithm sqAlg to compute the Tarski query of polynomials
+  
+{\bf Methods}:
+  \begin{itemize}
+    \item naive [brute force method on a huge matrix of signs]
+    \item smart [a method that uses much smaller matrices of signs]
+    \item quick[an improvement of smart based on BPR edition 2016 on line]
+  \end{itemize}
+
+  
+{\bf Output}: a list representing a subset of the all elements of
+  \{0,-1,1\}\^{}polList describing the possible signs of the polynomials in
+  polList at ptSet
+  
+{\bf Example}: In MAXIMA
+
+signDetermination( [x,x+1,x-2], x\^{}5-9*x\^{}3-x\^{}2+9,tarskiQuery,x);
+
+[ [ 1,1,1 ] , [ 1,1,-1 ] , [ -1,-1,-1 ] ]
+
+naiveSignDetermination( [x,x+1,x-2],x\^{}5-9*x\^{}3-x\^{}2+9,sRemTarskiQuery,x);
+    
+     [ [ -1,-1,-1 ] , [ 1,1,-1 ] , [ 1,1,1 ] ]
+     
+smartSignDetermination( [x,x+1,x-2], x\^{}5-9*x\^{}3-x\^{}2+9, tarskiQuery,x);
+    
+    [ [ 1,1,1 ] , [ 1,1,-1 ] , [ -1,-1,-1 ] ]
+    
+    quickSignDetermination( [x,x+1,x-2],x\^{}5-9*x\^{}3-x\^{}2+9, tarskiQuery,x);
+    
+    [ [ 1,1,1 ] , [ [ 1,1,1 ] , [ 1,1,-1 ] , [ -1,-1,-1 ] ]
+    
+ \noindent In SageMath 
+ 
+ MAX.signDetermination( [x,x+1,x-2], x\^{}5-9*x\^{}3-x\^{}2+9,'tarskiQuery',x).sage()
+  
+  \noindent (note the '..' aroung tarskiQuery) and similarly for the others.
+  
+  It is also possible to obtain the cardinals of realizable sign conditions
+  together with their list.
+  
+ {\bf Name}: signDeterminationwithcardinals(polList,ptSet,sqAlg,var)
+  
+  {\bf Input}: list polList of polynomials in var, a description of a finite set of
+  points, an algorithm sqAlg to compute the Tarski query
+  
+  {\bf  Method}:  quick*
+
+   {\bf Output}: a list representing the cardinals of the realizable sign
+  conditions of polList at pSet, a subset of the all elements of
+  \{0,-1,1\}\^{}polList describing the realizable signs of the polynomials in
+  polList at ptSet and
+  
+  
+signDeterminationwithcardinals([x,x+1], x\^{}5-9*x\^{}3-x\^{}2+9,tarskiQuery,x);
+
+ [[2, 1], [[1, 1], [- 1, - 1]]]
+ 
+ quickSgnDeterminationwithcardinals([x,x+1], x\^{}5-9*x\^{}3-x\^{}2+9,tarskiQuery,x)
+ 
+  [[2, 1], [[1,1], [- 1, - 1]]]
+
+
+\subsubsection{Zerononzero Determination}
+
+The corresponding results are explained in D. Perrucci, M.-F. Roy.
+Zero-nonzero and real-nonreal sign determination, Linear Algebra and Its
+Applications 439 (2013), no. 10, pp. 3016-3030 (preliminary
+version,arXiv:1305.4131).
+
+It is based on a blackbox similar to the Tarski query \ computing the number
+of roots of a polynomial where the value of another polynomial is non zero.
+
+\noindent{\bf $\circ$ Invertibility Query}: Computes the number of complex roots of P where Q is nonzero
+
+{\bf Name}: invertibility(Q,P,var)
+
+{\bf Input}: two univariate polynomials P and Q
+
+{\bf Methods}: gcd*
+ 
+{\bf Output}: the number of complex roots of P where Q is nonzero
+
+{\bf Example}:
+  
+invertibilityQuery(x,x*(x\^{}5-9*x\^{}3-x\^{}2+9),x)
+  
+  5
+  
+
+
+\noindent{\bf $\circ$ Zero nonzero determination}
+
+{\bf Name}:
+zerononzeroDetermination(polylist,P,Qu,var)
+
+{\bf Input}: list polList of polynomials in var, a description of a finite set of
+points, an algorithm Qu to compute the Invertibility query
+
+{\bf Method}: quick*
+
+{\bf Output}: a list representing a subset of the all elements of
+\{0,-1,1\}\^{}polList describing the possible zero nonzero conditions of the
+polynomials in polList at the complex zeroes of P
+
+{\bf Example}: In MAXIMA
+
+zerononzeroDetermination( [x,x+1,x-2], x*(x\^{}5-9*x\^{}3-x\^{}2+9),invertibilityQuery,x);
+  
+  [[0, 1, 1], [1, 1, 1]]
+
+\noindent In SageMath
+
+MAX.zerononzeroDetermination( [x,x+1,x-2], x*(x\^{}5-9*x\^{}3-x\^{}2+9),'invertibilityQuery',x).sage()
+  
+  \noindent (note the '...' around invertibilityQuery).
+
+The same thing can be done with the information on the cardinals
+
+\noindent{\bf  $\circ$ Zero nonzero determination with cardinals}
+
+{\bf Name}:zerononzeroDeterminationwithcardinals(polylist,P,Qu,var)
+
+{\bf Input}: list polList of polynomials in var, a description of a finite set of
+points, an algorithm Qu to compute the Invertibility query
+
+{\bf Methods}: quick*
+  
+{\bf Output}: a list representing a subset of the all elements of
+\{0,-1,1\}\^{}polList describing the possible zero nonzero conditions of the
+polynomials in polList at the zeroes of P
+
+{\bf Example}
+
+zerononzeroDeterminationwithcardinals([x,x+1,x-2], x*(x\^{}5-9*x\^{}3-x\^{}2+9),
+  invertibilityQuery,x);
+  
+  [[1, 5], [[0, 1, 1], [1, 1, 1]]]
+ 
+
+\subsubsection{Thom encoding}
+
+
+\noindent{\bf $\circ$Thom Encoding}:
+  Computes the Thom encodings of the real roots of a polynomial, which is the
+  list of signs taken by the derivatives
+  
+{\bf Name}: thomEncoding(P,var)
+  
+{\bf   Input}: polynomial P in variable var
+  
+{\bf   Output}: a list containing the Thom encoding of the real roots of P
+  
+{\bf Example}
+  
+  thomEncoding(x\^{}2-2,x);
+  
+    [ [ -1,1 ] , [ 1,1 ] ]
+    
+
+\noindent{\bf $\circ$ Thom Compare}:
+  Compares the Thom encodings of the real roots of two polynomials
+  
+{\bf Name}: thomCompare(P,Q,var)
+  
+{\bf Input}: polynomials P,Q in variable var
+  
+{\bf Output}: a list containing elements of the form [owner,thomInf] with the
+  following possibilities :
+  \begin{itemize}
+    \item [0,thomP,thomQ] for a common root of P with Thom encoding thomP and
+    of Q with Thom encoding thomQ
+    \item [1,thomP] for a root of P not of Q with Thom encoding thomP
+    \item [2,thomQ] for a root of Q not of P with Thom encoding thomQ
+  \end{itemize}
+  Moreover the corresponding real numbers are ordered.
+  
+{\bf Example}
+
+  thomCompare( x\^{}2-4, expand((x-2)*(x\^{}3-1)),x);
+  
+  [[ 1, [ -1,1 ] ] , [ 2, [ -1,0,1,1 ] ] , [ 0, [ 1,1 ] , [ 1,1,1,1 ] ] ]
+ 
+  
+
+\noindent{\bf $\circ$ Thom Encoding with signs}:
+  Computes the Thom encoding of P at each root and the sign of Q for each root
+  
+{\bf Name}: thomEncodingWithSigns(P,Q,var)
+  
+{\bf Input}: polynomials P,Q in variable var
+  
+{\bf Output}: a list of couples containing for each root of P its Thom encodings
+  and the corresponding sign of Q
+  
+{\bf Example}
+
+thomEncodingWithSigns(x\^{}2-2,x-1,x);
+
+[ [ [ 1,1 ] ,1 ] , [ [ -1,1 ] ,-1 ] ]
+  
+  
+\subsection{Topology (topology.mac)}
+
+The corresponding results are explained in Chapter 11 of "Algorithms in Real
+Algebraic Geometry" by S. Basu, R. Pollack, M.-F. Roy
+
+\noindent{\bf $\circ$ Topology}:
+  Computes the topology of a plane curve
+  
+{\bf Name}: topology(curve,x,y).
+  
+{\bf Input}: the equation of a curve in two variables with rational coefficients
+  and the name of the two variables.
+  
+{\bf Output}: a couple whose first element gives the value of $a$ in the initial
+  change of coordinates, the second describes the topology with respect to the
+  new coordinates. It gives for each interval between the roots of the
+  discriminant the number of branches above it and for each root $x$ of the
+  discriminant, a couple containing the number of points of the curve above
+  $x$ and the position of the unique critical point over $x$.
+  
+  More precisely, the output is $[ a, [ m_{0} , [ n_{1} ,c_{1} ] , \ldots
+  ,m_{r-1} , [ n_{r} ,c_{r} ] ,m_{r} ] ]$.
+  
+ {\bf Example}: In MAXIMA
+  
+   examplecurve:2*y\^{}3+(3*x-3)*y\^{}2+(3*x\^{}2-3*x)*y+x\^{}3;
+   
+   2y\^{}{3} + ( 3x-3 ) y\^{}{2} + ( 3x\^{}{2} -3x ) y+x\^{}{3}
+   
+   T:topology(examplecurve,x,y);
+   
+   [ 0, [ 1, [ 2,2 ] ,3, [ 2,1 ] ,3, [ 2,2 ] ,1 ] ]
+   
+   T[2];
+   
+   [ 1, [ 2,2 ] ,3, [ 2,1 ] ,3, [ 2,2 ] ,1 ]
+   
+ \noindent In SageMath
+ 
+examplecurve=2*y\^{}3+(3*x-3)*y\^{}2+(3*x\^{}2-3*x)*y+x\^{}3;examplecurve
+   
+   2y\^{}{3} + ( 3x-3 ) y\^{}{2} + ( 3x\^{}{2} -3x ) y+x\^{}{3}
+   
+   T=MAXIMA.topology(examplecurve,x,y).sage();T
+   
+   [ 0, [ 1, [ 2,2 ] ,3, [ 2,1 ] ,3, [ 2,2 ] ,1 ] ]
+   
+   T[1]
+   
+   [ 1, [ 2,2 ] ,3, [ 2,1 ] ,3, [ 2,2 ] ,1 ] 
+   
+   \noindent note the index (in SageMath the first element of the list has index 0).
+   
+To draw the graph homeomorphic to the curve, in MAXIMA  the command  drawTopology(T[2]);
+creates a gnuplot picture. This does not work inside SageMath.
+
+\noindent But the SageMath program in the file drawTopology\_code.sage (downloaded inside sarag
+ at https://perso.univ-rennes1.fr/marie-francoise.roy/bpr-ed2-posted3.html, authors Edinah Ngang and Marie-Fran\c coise Roy)  makes it possible to draw the graph. In our example the command  drawTopology(T[1]) produces the following picture
+{\center
+\begin{figure}[h!]
+  \includegraphics[width=8.1cm]{formanual.png}
+\end{figure}
+}
+
+\newpage 
+ 
+\subsection{Certificate of positivity}
+
+\subsubsection{Univariate Certificate of positivity (file certificateOfPositivity.mac)}
+
+ In the univariate case, the corresponding reference is F. Boudaoud, F.
+Caruso M.-F. Roy Certificates of positivity in the Bernstein basis, Discrete
+and Computational Geometry 39 4 639-655 (2008)
+
+
+\noindent{\bf $\circ$ Certificate of positivity}:
+  Decides whether a polynomial is positive or negative on an interval and
+  provides a certificate
+  
+ {\bf Name}: certificate(P,var,a,b)
+  
+{\bf Input}: P is a polynomial in variable var. a and b are real numbers
+  
+{\bf Output}:
+  \begin{itemize}
+    \item [1, certificate] if P is positive
+    \item [-1, certificate] if P is negative
+    \item [0, [a], sqPol] if P(a) equal 0 (where sqPol is the separable
+    part of P)
+    \item [0, [c,d], sqPol] if sqPol(c)*sqPol(d)<0 (where sqPol is the
+    separable part of P)
+  \end{itemize}
+  
+  {\bf Example} 
+  
+  certificate(x\^{}4+(8*x-1)\^{}2,x,-1,1);
+  
+  [ 1 , [ [ [ -1,0 ] ,3, [ 3936,2160,944,240,48 ] ] , [ [ 0, 1/8 ] ,3, [
+    196608,98304,32768,0,48 ] ] ,[[ 1/8 ,1 ]
+    ,3, [ 48,384,1608704,4841472,9830400 ]]]]
+    
+    certificate((x-2)\^{}2-1,x,-1,1);
+    
+    [0, [1]]
+    
+  certificate((2*x\^{}2-1)\^{}2,x,-1,1);
+  
+  [0 , [ -1,0 ] ,4x\^{}{2} -2 ]
+   
+   
+  certificate(-x\^{}4-(8*x-1)\^{}2,x,-1,1);
+    
+   [-1, [ [ [ -1,0 ] ,3, [
+    -3936,-2160,-944,-240,-48 ] ] , [ [ 0, 1/8] ,3, [
+    -196608,-98304,-32768,0,-48 ] ] , [[ 1/8 ,1] ,3, 
+    [ -48,-384,-1608704,-4841472,-9830400 ]]]]
+
+
+\subsubsection{Multivariate Certificate of positivity (file : multiCertificateOfPositivity.mac)}
+
+ In the multivariate case, the corresponding reference is R. Leroy,
+Certificats de positivit{\'e} et minimisation polynomiale dans la base de
+Bernstein multivari{\'e}e \ http://tel.archives-ouvertes.fr/tel-00349444/fr/
+
+
+\noindent{\bf $\circ$ Bernstein coefficients on a
+simplex}:
+  Various annex functions expressing a polynomial in the Bernstein basis on a
+  simplex.
+  
+{\bf Name}: compositions(d,k+1)
+  
+{\bf  Input}: d and k are natural numbers
+  
+{\bf Output}: all the multiindices of sum d and length k+1
+  
+ {\bf Name}: simplex2bar(V,vars)
+  
+  {\bf Input}: a simplex V given by k+1 points, each of them described by its k
+  coordinates
+  
+  {\bf Output}: the k+1 barycentric coordinates definining the simplex
+  
+  
+  {\bf Name}: monom2bern(P,V,vars,d)
+  
+   {\bf Input}: P is a multivariate polynomial in a list of k variable vars, d is at
+  least the degree of P, V is a simplex described by k+1 points with k
+  coordinate
+  
+ {\bf Output}: the list of coefficients of P in the Bernstein basis of degree d
+  on V (in the order corresponding to compositions d,k for the barycentric
+  coordinates given by simplex2bar)
+  
+  
+  
+  {\bf Name}: deCasteljau(simpl,ber,deg,M)
+  
+  {\bf Input}: a simplex defined by k+1 points with k coordinates, Bernstein
+  coefficients on this simplex of a polynomial of degree at most deg and the k
+  coordinates of a point
+  
+  {\bf Output}: the list of coefficients of P in the Bernstein basis of degree d
+  on the k+1 subsimplices defined by the initial simplex and the point
+
+  
+  {\bf Example}:
+  
+  Comp:compositions(2,3);
+  
+  [ [ 2,0,0 ] , [ 1,1,0 ] , [ 1,0,1 ] , [ 0,2,0 ] , [ 0,1,1 ] , [ 0,0,2 ] ]
+  
+  L:simplex2bar([[0,0],[1,0],[0,1]],[x,y]);
+  
+  [ -y-x+1,x,y ]
+    
+  expand(sum(apply(multinomial\_coeff,Comp[i])*prod(L[j]\^{}Comp[i][j],j,1,length(L)),i,1,length(Comp)));
+  
+  1
+  
+  B:monom2bern(9*y\^{}2-24*x*y+12*y+16*x\^{}2+16*x+5,[[0,0],[1,0],[0,1]],[x,y],2);
+  
+  [ 5,13,11,37,7,26 ]
+ 
+ expand(sum(B[i]*apply(multinomial\_coeff,Comp[i])*prod(L[j]\^{}Comp[i][j],j,1,length(L)),i,1,length(Comp)));
+ 
+9*y\^{}2-24*x*y+12*y+16*x\^{}2+16*x+5
+ 
+   deCasteljau([[0,0],[1,0],[0,1]],B,2,[1/2,1/2]);
+   
+   [[[[ 1/2 ,1/2], [ 1,0 ] , [ 0,1 ]] , [77/4 ,22, 33/2,37,7,26]] , [[ [ 0,0 ] , [1/2 ,1/2] , [ 0,1 ]] , [ 5,12,11, 77/4 , 33/2 ,26 ] ] , [ [ [ 0,0 ] , [ 1,0 ] ,[1/2 , 1/2] ] , [ 5,13,12,37,22,77/4]]]
+    
+ \noindent In SameMath the command for the verification that the sum of the polynomials in the Bernstein basis is 1 is as follows 
+ 
+   Comp=MATH.compositions(2,3).sage();Comp
+  
+  [ [ 2,0,0 ] , [ 1,1,0 ] , [ 1,0,1 ] , [ 0,2,0 ] , [ 0,1,1 ] , [ 0,0,2 ] ]
+  
+  L:simplex2bar([[0,0],[1,0],[0,1]],[x,y]);L
+  
+  [ -y-x+1,x,y ]
+ 
+ expand(sum(multinomial(c)*prod([t\^{}u for t,u in zip(L,c)])
+for c in Comp)))
+
+1
+
+\noindent (the syntax MAX.expand(sum(apply(multinomial\_coeff,Comp[i])*prod(L[j]\^{}Comp[i][j],j,1,length(L)),i,1,length(Comp))).sage() does not work)
+
+\noindent and for the verification that the Bernstein coefficients of 9*y\^{}2-24*x*y+12*y+16*x\^{}2+16*x+5 are the right ones the commands are 
+
+B=MAX.monom2bern(9*y\^{}2-24*x*y+12*y+16*x\^{}2+16*x+5,[[0,0],[1,0],[0,1]],[x,y],2).sage();B
+
+expand(sum(B[c]*multinomial(Comp[c])*prod([t\^{}u for t,u in zip(L,Comp[c])])
+for c in range(len(Comp))))
+
+
+
+\noindent{\bf $\circ$ Certificate of positivity in the
+multivariate case}:
+  Decides whether a polynomial is positive on a simplex and provides a
+  certificate
+  
+{\bf Name}: multiCertificate(P,V,vars,d,sub,cert)
+  
+ {\bf  Input}: P is a multivariate polynomial in a list of k variable vars, d is at
+  least the degree of P, V is a simplex described by k+1 points with k
+  coordinates, sub is a subdivision method (bisection, bisection\_castel,
+  standard\_triang2, bisection\_max\_pos)
+  
+{\bf Output}:
+  \begin{itemize}
+    \item [certificate] if P is positive i.e. a sequence of subsimplexes and
+    Bernstein coefficients on the corresponding subsimplex
+    \item [a, sign(P(a))] if P(a)$\leqslant$0
+    \item in other cases the output is not satisfactory yet
+  \end{itemize}
+  
+  {\bf Example}: In MAXIMA
+  
+  
+ C1:multiCertificate(9*y\^{}2-24*x*y+12*y+16*x\^{}2-16*x+5,[[0,0],[1,0],[0,1]],[x,y],2,bisection,pos);
+ 
+[[[[0, 0], [1/2, 1/2], [0, 1]], [5, 4, 11, 13/4, 17/2, 26]],
+ [[[0, 0], [1/2, 0], [1/2, 1/2]], [5, 1, 4, 1, 1, 13/4]],
+ [[[1/2, 0], [3/4, 1/4], [1/2, 1/2]], [1, 1, 1, 17/16, 5/8, 13/4]],
+ [[[1/2, 0], [1, 0], [3/4, 1/4]], [1, 1, 1, 5, 3/2, 17/16]]]
+ 
+\noindent In SageMath 
+
+
+
+MAX.multiCertificate(9*y\^{}2-24*x*y+12*y+16*x\^{}2-16*x+5,[[0,0],[1,0],[0,1]],[x,y],2,'bisection','pos').sage()
+
+\noindent(note the '..' around bisection and pos).
+  
+\newpage
+ {\bf Name}: drawMultiCertificate(list)
+  
+{\bf Input}: the certficate output by multiCertificate, when the polynomial is
+  positive, in the bivariate case
+  
+ {\bf Output}: a picture of the corresponding subdivision.
+ 
+  This does not work inside SageMath.
+
+\noindent But the SageMath program in the file drawMultiCertificate\_code.sage (downloaded inside sarag
+ at https://perso.univ-rennes1.fr/marie-francoise.roy/bpr-ed2-posted3.html, authors Marie-Fran\c coise Roy and Dima Pasechnik)  makes it possible to draw the graph. In our example the command  drawMultiCertificate(C1) produces the following picture
+{\center
+\begin{figure}[h!]
+  \includegraphics[width=8.1cm]{multicertificate.png}
+\end{figure}
+}
+  
+\noindent 
+\end{document}
