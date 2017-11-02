@@ -178,7 +178,7 @@ Output: degree (given as a multiindex) of the dominant coefficient of P wrt lexi
 --------------------------------------*/
 
 dominant(P,vars):=
-  block([i,l,expo,c,d],
+  block([i,l,expo,c,d,expo],
   l:length(vars),
   expo:[],
   c:P,
@@ -335,7 +335,7 @@ Output: list of the Bernstein expansion of degree deg of P wrt the two simplices
 --------------------------------------*/
 
 deCasteljauarete(simpl,ber,deg,i,j,x):=
-  block([k,alpha,bet,gamm,l,cmp,res,M,p,L,dprime,indi,resi,resj,C],local(bcastel),
+  block([k,alpha,bet,gamm,l,cmp,res,M,p,l,L,dprime,indi,resi,resj,C],local(bcastel),
   k:length(simpl)-1,
   M:(1-x)*simpl[i]+x*simpl[j],
   if k<2 then return(deCasteljau(simpl,ber,deg,M)),
@@ -797,7 +797,7 @@ The size of the image is defined by s (usually 500).
 
 --------------------------------------*/  
 
-load(draw);
+/*load(draw);*/
 
 drawMultiCertificate(L,s):=
   block([gone,t],
@@ -810,8 +810,9 @@ drawMultiCertificate(L,s):=
   (
   gone:append([dimensions=[s,s],xtics=false,ytics=false,axis_bottom=false,axis_left=false,axis_top=false,axis_right=false,colorbox=false,fill_color=red, title=t],flatten(makelist([polygon(L[i])],i,1,length(L))))
   ),
-  apply(draw2d,gone)
-  );
+ apply(draw2d,gone)
+ /*apply(plot2d,gone)*/
+ );
 
 /*-------------------------------------
 

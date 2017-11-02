@@ -1,0 +1,11 @@
+
+version of 1st feb 2017
+by Fabrizio Caruso
+modified by Alexandre Le Meur and Marie-Francoise Roy
+with a contribution from Richard Leroy
+with a contribution from Mathieu Kohli
+with a merge by Fabrizio Caruso of the code in official Maxima and the version developed at the Univ. of Rennes 1
+
+
+
+

@@ -4,12 +4,14 @@
 /*modified by Mathieu Kohli (addition of quickSignDetermination)*/
 /*merged with forked developed at the Univ. of Rennes 1 by Fabrizio Caruso */
 
-dir : "./sarag/";
+dir : "./saragcur/";
 
 
 modLoad(modName) :=
 
   load(concat(dir,modName));
+
+/*load("draw");*/
 
 modLoad("sarag_initialization.mac");
 

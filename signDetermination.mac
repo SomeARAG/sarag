@@ -47,7 +47,7 @@ ceilFract(num,den) :=
 /* nBlockRows, nBlockCols : number of rows/cols in the blocks */
 /* inBlockRowIndex, inBlockColIndex : row/col in the block */
 blockMatrix(descr) :=
-  block([nRows,rCols,nBlockRows,i,j,rowRes,res,
+  block([nRows,rCols,nBlockRows, nBlockRows,i,j,rowRes,res,
          blockRow,blockCol,inBlockRows, inBlockCols,
          inBlockRowIndex,inBlockColIndex, nCols],
      nBlockRows : length(descr),
@@ -665,16 +665,13 @@ thomComm(pol,var,extThomEnc) :=
 
 /* Root Comparison */
 thomCompare(p,q,var) :=
-  block([pSign,qSign, exP, exQ],
+  block([pSign,qSign],
 
-  exP: expandIf(p),
-  exQ: expandIf(q),
+  pSign : thomSort(extThomEncoding(p,q,var)),
 
-  pSign : thomSort(extThomEncoding(exP,exQ,var)),
+  qSign : thomSort(extThomEncoding(q,p,var)),
 
-  qSign : thomSort(extThomEncoding(exQ,exP,var)),
-
-  return(extThomMerge(pSign,degree(exP,var),qSign,degree(exQ,var)))
+  return(extThomMerge(pSign,degree(p,var),qSign,degree(q,var)))
 
   ); /* end proc */
 

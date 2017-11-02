@@ -136,6 +136,7 @@ archimedeanTopology(pol,isolAlg,x,y) :=
 
     isolDiscr : isListSort(isolAlg(discr,x)),
 
+   
     jList : [],
     epsList : [],
     rootsAtDiscr : [],
@@ -367,7 +368,7 @@ getPointsOnCrit(num,pos,projX,height):=
 
 getTopologyPoints(tpg) :=
   block([i,j,nonCritPts,critPts,ptsOnCritProj,previous,jump,newNonCritPts,lastCritPts,lastNonCritPts,
-         correct,newPtsAtInd,ptsAtInf,lineSegsAtInf, lineSegs, newPtsAtInf],
+         correct,newPtsAtInd,ptsAtInf,lineSegsAtInf],
    nonCritPts : [],
    lastCritPts : [0,[],[]],
    lastNonCritPts : [],
@@ -512,7 +513,7 @@ getCritPoint(critLine,projX,height) :=
 
 drawTopology(tpg) :=
   block([nonCritPoints,critPoints,firstAttemptToGetPoints,secondAttemptToGetPoints, topologyPoints,style,preamble,i,
-         leftMost,rightMost,top,bottom,ptsAtInf,fixedTpg, lineSegs],
+         leftMost,rightMost,top,bottom,ptsAtInf,fixedTpg],
 
     firstAttemptToGetPoints: getTopologyPoints(tpg),
     if not firstAttemptToGetPoints=false then
