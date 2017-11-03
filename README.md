@@ -17,7 +17,9 @@ by Mathieu Kohli.
 ---------------------------------------------------------------
 
 Please report bugs to: 
-fabrizio_caruso@hotmail.com
+
+fabrizio_caruso@hotmail.com  
+
 marie-francoise.roy@univ-rennes1.fr
 
 ---------------------------------------------------------------
