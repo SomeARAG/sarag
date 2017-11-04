@@ -226,6 +226,8 @@ sSubResExtVerbose(a,b,var,verbosity) :=
       return(false)
       ),
 
+   if degA=0 then
+      return([[a],[1],[0]]),
 
    SR : make_array('any,degA+1),
    s : make_array('any,degA+1),
